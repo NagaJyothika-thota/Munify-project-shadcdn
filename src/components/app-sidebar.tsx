@@ -1,5 +1,5 @@
 import * as React from "react"
-import { LayoutDashboard, FolderKanban, Building2, Settings, Wrench, GalleryVerticalEnd, Table, Shield, Handshake, FileText,Activity } from "lucide-react"
+import { GalleryVerticalEnd, Wrench } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
@@ -14,161 +14,70 @@ import {
 } from "@/components/ui/sidebar"
 import { SearchForm } from "./search-form"
 import { useAuth } from "@/contexts/auth-context"
+import { useMenu } from "@/contexts/menu-context"
+import { getMenuIconForMenu } from "@/lib/menu-icon-mapper"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Spinner } from "@/components/ui/spinner"
 
-// This is sample data.
-const data = {
-  teams: [
-    {
-      name: "Munify",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    // {
-    //   name: "Acme Corp.",
-    //   logo: AudioWaveform,
-    //   plan: "Startup",
-    // },
-    // {
-    //   name: "Evil Corp.",
-    //   logo: Command,
-    //   plan: "Free",
-    // },
-  ],
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "/main",
-      icon: LayoutDashboard,
-      items: [
-        { title: "Overview", url: "/main" },
-        { title: "Municipality Dashboard", url: "/main/dashboard/municipality" },
-        { title: "Master Dashboard", url: "/main/admin/monitoring" },
-        { title: "Lender Dashboard", url: "/main/lender/dashboard" },
-      ],
-    },
-    {
-      title: "Projects",
-      url: "/main/projects",
-      icon: FolderKanban,
-      items: [
-        { title: "Live Projects", url: "/main/projects/live" },
-        { title: "Funded Projects", url: "/main/projects/funded" },
-        { title: "My Projects", url: "/main/projects/my" },
-        { title: "Favorites", url: "/main/projects/favorites" },
-        { title: "Card Designs", url: "/main/designs/cards" },
-      ],
-    },
-    {
-      title: "Municipalities",
-      url: "/main/municipalities",
-      icon: Building2,
-      items: [
-        { title: "All Municipalities", url: "/main/municipalities" },
-        { title: "Credit Ratings", url: "/main/municipal/ratings" },
-        { title: "Financial Analysis", url: "/main/municipal/analysis" },
-        { title: "Q&A Management", url: "/main/municipal/qa" },
-        { title: "Project Progress", url: "/main/municipal/projects/progress" },
-        { title: "Documents and Meetings", url: "/main/municipal/document-requests" },
-      ],
-    },
-    {
-      title: "Lender",
-      url: "/main/lender",
-      icon: Handshake,
-      items: [
-        { title: "Request Documents and Meetings", url: "/main/lender/requested-documents" },
-      ],
-    },
-    {
-      title: "Reports",
-      url: "/main/reports",
-      icon: FileText,
-      items: [
-        { title: "Lender Report", url: "/main/reports/lender-report" },
-        { title: "Project-level Commitment Report", url: "/main/reports/project-level-commitment" },
-        { title: "Project Success Report", url: "/main/reports/project-success" },
-        { title: "Current Status Report", url: "/main/reports/current-status" },
-        { title: "Project-level Commitment Report (Admin)", url: "/main/reports/project-level-commitment-admin" },
-        { title: "Project Success Report (Admin)", url: "/main/reports/project-success-admin" },
-      ],
-    },
-    {
-      title: "Master",
-      url: "/main/master",
-      icon: Shield,
-      items: [
-        { title: "Roles Management", url: "/main/master/roles" },
-        { title: "Organizations Management", url: "/main/master/organizations" },
-        { title: "Fee Category Exemptions", url: "/main/master/fee-category-exemptions" },
-        { title: "Common Master Excel", url: "/main/master/common-excel" },
-      ],
-    },
-    {
-      title: "Admin",
-      url: "/main/admin",
-      icon: Settings,
-      items: [
-        { title: "Project Management", url: "/main/admin/projects" },
-        { title: "Create Project", url: "/main/admin/projects/create" },
-        { title: "My Drafts", url: "/main/admin/projects/drafts" },
-        // { title: "Validate Projects", url: "/main/admin/projects/validate" },
-        { title: "User Management", url: "/main/admin/users" },
-        { title: "Invitations Management", url: "/main/admin/invitations" },
-        { title: "Send Invitation", url: "/main/admin/invitation" },
-        { title: "Notifications", url: "/main/admin/notifications" },
-        { title: "Commitments Overview", url: "/main/admin/commitments" },
-        { title: "Reports", url: "/main/admin/reports" },
-      ],
-    },
-    {
-      title: "Trackings",
-      url: "/main/admin/monitoring/lifecycle",
-      icon: Activity,
-      items: [
-        { title: "Project Lifecycle Tracker", url: "/main/admin/monitoring/lifecycle" },
-        { title: "Commitment Monitoring", url: "/main/admin/monitoring/commitments" },
-        { title: "Q&A & Communication", url: "/main/admin/monitoring/qa" },
-        { title: "Document Requests & Library", url: "/main/admin/monitoring/documents" },
-        { title: "Allocation & Disbursement", url: "/main/admin/monitoring/allocation-disbursement" },
-      ],
-    },
-    {
-      title: "Components",
-      url: "/main/components",
-      icon: Table,
-      items: [
-        { title: "Data Table", url: "/main/components/datatable" },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Settings",
-      url: "/main/projects",
-      icon: Wrench,
-    },
-    // {
-    //   name: "Sales & Marketing",
-    //   url: "/main/projects/active",
-    //   icon: PieChart,
-    // },
-    // {
-    //   name: "Travel",
-    //   url: "/main/projects/archived",
-    //   icon: Map,
-    // },
-  ],
-}
+// Static teams data
+const teams = [
+  {
+    name: "Munify",
+    logo: GalleryVerticalEnd,
+    plan: "Enterprise",
+  },
+]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [query, setQuery] = React.useState("")
   const { user } = useAuth()
+  const { menus, loading, error } = useMenu()
   const q = query.trim().toLowerCase()
-  const filteredNavMain = data.navMain.map((section) => ({
-    ...section,
-    items: section.items?.filter((i) => i.title.toLowerCase().includes(q)),
-  }))
-  const filteredProjects = data.projects.filter((p) => p.name.toLowerCase().includes(q))
+
+  // Convert backend menus to sidebar format
+  const navMainItems = React.useMemo(() => {
+    if (!menus || menus.length === 0) {
+      return []
+    }
+
+    return menus
+      .map((menu) => {
+        // Filter submenus based on search query
+        const filteredSubmenus = menu.submenus
+          .filter((submenu) => 
+            submenu.submenu_name.toLowerCase().includes(q) ||
+            menu.menu_name.toLowerCase().includes(q)
+          )
+          .map((submenu) => ({
+            title: submenu.submenu_name,
+            url: submenu.route.startsWith('/') ? submenu.route : `/${submenu.route}`,
+          }))
+
+        // Only include menu if it has submenus (after filtering)
+        if (filteredSubmenus.length === 0 && q) {
+          return null
+        }
+
+        return {
+          title: menu.menu_name,
+          url: filteredSubmenus.length > 0 ? filteredSubmenus[0].url : "#",
+          icon: getMenuIconForMenu(menu.menu_name, menu.menu_icon),
+          items: filteredSubmenus,
+        }
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null)
+  }, [menus, q])
+
+  // Static projects section (Settings)
+  const projects = [
+    {
+      name: "Settings",
+      url: "/main/settings",
+      icon: Wrench,
+    },
+  ]
+
+  const filteredProjects = projects.filter((p) => p.name.toLowerCase().includes(q))
 
   // Extract user data from auth context
   const userData = {
@@ -180,17 +89,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher teams={teams} />
         <div className="group-data-[collapsible=icon]:hidden">
           <SearchForm value={query} onChange={setQuery} />
         </div>
-       
-      
-       
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={filteredNavMain} />
-        <NavProjects projects={filteredProjects} />
+        {loading ? (
+          <div className="flex items-center justify-center p-4">
+            <Spinner size={24} />
+            <span className="ml-2 text-sm text-muted-foreground">Loading menus...</span>
+          </div>
+        ) : error ? (
+          <Alert variant="destructive" className="m-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : navMainItems.length === 0 ? (
+          <div className="p-4 text-sm text-muted-foreground text-center">
+            No menus available
+          </div>
+        ) : (
+          <>
+            <NavMain items={navMainItems} />
+            <NavProjects projects={filteredProjects} />
+          </>
+        )}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userData} />

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,6 +26,10 @@ interface ResetPasswordRequest {
 export default function ForgotPassword() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const OTP_RESEND_DELAY = 50
+
+  const [resendCountdown, setResendCountdown] = useState(0)
+  const resendTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   const [activeTab, setActiveTab] = useState<"request" | "reset">("request")
   const [otpRequestedFor, setOtpRequestedFor] = useState<string>("")
@@ -147,6 +151,22 @@ export default function ForgotPassword() {
       setResetForm(prev => ({ ...prev, userId: variables.userId }))
       setActiveTab("reset")
       setRequestForm({ userId: "" })
+      setResendCountdown(OTP_RESEND_DELAY)
+
+  if (resendTimerRef.current) {
+    clearInterval(resendTimerRef.current)
+  }
+
+  resendTimerRef.current = setInterval(() => {
+    setResendCountdown(prev => {
+      if (prev <= 1) {
+        clearInterval(resendTimerRef.current!)
+        resendTimerRef.current = null
+        return 0
+      }
+      return prev - 1
+    })
+  }, 1000)
       queryClient.invalidateQueries({ queryKey: ["auth", "forgot-password"] })
     },
     onError: (error: any) => {
@@ -161,6 +181,14 @@ export default function ForgotPassword() {
       isSubmittingRequest.current = false
     },
   })
+
+  useEffect(() => {
+    return () => {
+      if (resendTimerRef.current) {
+        clearInterval(resendTimerRef.current)
+      }
+    }
+  }, [])
 
   const resetPasswordMutation = useMutation({
     mutationKey: ["auth", "forgot-password", "reset"],
@@ -345,7 +373,7 @@ export default function ForgotPassword() {
                                 generateOtpMutation.mutate({ userId: userIdToUse })
                               }
                             }}
-                            disabled={isRequesting || isResetting || !(resetForm.userId.trim() || otpRequestedFor.trim())}
+                            disabled={isRequesting || isResetting || resendCountdown > 0 || !(resetForm.userId.trim() || otpRequestedFor.trim())}
                           >
                             {isRequesting ? (
                               <span className="inline-flex items-center gap-1">
@@ -354,6 +382,7 @@ export default function ForgotPassword() {
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1">
+                                {resendCountdown > 0 && `(${resendCountdown}s)`}
                                 <RotateCcw className="h-3 w-3" />
                                 Resend OTP
                               </span>

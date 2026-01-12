@@ -50,7 +50,7 @@ const data = {
       items: [
         { title: "Live Projects", url: "/main/projects/live" },
         { title: "Funded Projects", url: "/main/projects/funded" },
-        { title: "My Projects", url: "/main/projects/my" },
+        { title: "My Funded Projects", url: "/main/projects/my" },
         { title: "Favorites", url: "/main/projects/favorites" },
         { title: "Card Designs", url: "/main/designs/cards" },
       ],
@@ -93,8 +93,8 @@ const data = {
       icon: Settings,
       items: [
         { title: "Project Management", url: "/main/admin/projects" },
-        { title: "Create Project", url: "/main/admin/projects/create" },
-        { title: "My Drafts", url: "/main/admin/projects/drafts" },
+        // { title: "Create Project", url: "/main/admin/projects/create" },
+        { title: "My Projects", url: "/main/admin/projects/drafts" },
         // { title: "Validate Projects", url: "/main/admin/projects/validate" },
         { title: "User Management", url: "/main/admin/users" },
         { title: "Invitations Management", url: "/main/admin/invitations" },

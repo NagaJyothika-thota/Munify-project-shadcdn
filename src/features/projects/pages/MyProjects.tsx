@@ -109,7 +109,7 @@ export default function MyProjects() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">My Projects</h1>
+        <h1 className="text-3xl font-bold">My Funded Projects</h1>
         <p>View of funded projects by you</p>
       </div>
 

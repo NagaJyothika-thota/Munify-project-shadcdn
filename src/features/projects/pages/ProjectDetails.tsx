@@ -598,7 +598,7 @@ export default function ProjectDetails() {
         return []
       }
       const response = await apiService.get('/project-notes/', {
-        organization_id: project.organization_id,
+        organization_id: userData?.userBranches[1]?.branchId,
         project_reference_id: project.project_reference_id,
       })
       return response?.data || response
@@ -625,6 +625,9 @@ export default function ProjectDetails() {
       setFundingDialogOpen(true)
     }
   }
+
+  console.log("notes[0]?.organization_id:", notes?.[0]?.organization_id);
+console.log("userData.userBranches[1]:", userData?.userBranches?.[1]?.branchId);
 
   const handleCloseFundingDialog = () => {
     setFundingDialogOpen(false)
@@ -656,7 +659,7 @@ export default function ProjectDetails() {
 
       const payload = {
         project_reference_id: project.project_reference_id,
-        organization_id: project.organization_id,
+        organization_id: String(userData?.userBranches[1]?.branchId),
         title: noteTitle.trim(),
         content: noteContent.trim(),
         tags: [] as string[],

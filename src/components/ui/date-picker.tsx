@@ -14,6 +14,7 @@ export type DatePickerProps = {
   buttonClassName?: string
   popoverClassName?: string
   closeOnSelect?: boolean
+  disableFutureDates?: boolean 
 }
 
 export function DatePicker({
@@ -24,6 +25,7 @@ export function DatePicker({
   buttonClassName,
   popoverClassName,
   closeOnSelect = true,
+  disableFutureDates = false,
 }: DatePickerProps) {
   const [internalDate, setInternalDate] = React.useState<Date | undefined>(value)
   const isControlled = typeof onChange === "function"
@@ -81,6 +83,7 @@ export function DatePicker({
           toYear={2100}
           onSelect={handleSelect}
           initialFocus
+          disabled={disableFutureDates ? (date) => date > new Date() : undefined}  // ⬅ Disable ALL future dates
         />
       </PopoverContent>
     </Popover>

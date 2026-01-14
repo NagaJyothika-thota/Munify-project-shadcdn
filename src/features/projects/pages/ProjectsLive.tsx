@@ -926,10 +926,12 @@ export default function ProjectsLive() {
           const progress = commitmentGap !== null && !Number.isNaN(commitmentGap) && commitmentGap > 0
             ? Math.min(100, Math.max(0, Math.round((totalCommittedAmount / commitmentGap) * 100)))
             : 0
-          const end = p.end_date ? new Date(p.end_date) : null
-          const today = new Date()
-          const msLeft = end ? end.getTime() - today.getTime() : 0
-          const daysLeft = end ? Math.max(0, Math.ceil(msLeft / (1000 * 60 * 60 * 24))) : 0
+            const end = p.fundraising_end_date ? new Date(p.fundraising_end_date) : null;
+            const today = new Date();
+            const cleanToday = new Date(today.toDateString());
+            const cleanEnd = end ? new Date(end.toDateString()) : null;
+          const msLeft = cleanEnd ? cleanEnd.getTime() - cleanToday.getTime() : 0
+          const daysLeft = cleanEnd ? Math.max(0, Math.ceil(msLeft / (1000 * 60 * 60 * 24))) : 0
           const status = p.status
           const id = p.id
 
